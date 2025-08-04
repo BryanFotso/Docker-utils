@@ -1,0 +1,31 @@
+# Docker Utils
+
+Ce dépôt contient des configurations d'outils utiles que j'utilise au quotidien, mais que je lance uniquement avec Docker.
+
+## Objectif
+
+L'idée est de centraliser toutes les configurations Docker de mes outils de développement et d'administration préférés, permettant de :
+
+- 🚀 Déployer rapidement des outils sans installation locale
+- 🐳 Maintenir un environnement propre et isolé
+- 📦 Partager facilement des configurations fonctionnelles
+- 🔄 Répliquer l'environnement sur différentes machines
+
+## Structure
+
+Chaque dossier contient :
+- Un fichier `docker-compose.yml` pour le déploiement
+- Un `Readme.md` avec les instructions spécifiques
+- Les fichiers de configuration nécessaires
+
+## Utilisation
+
+Pour chaque outil, naviguez dans le dossier correspondant et utilisez :
+
+```bash
+docker-compose up -d
+```
+
+## Outils disponibles
+
+- **Portainer** : Interface web pour la gestion des conteneurs Docker
