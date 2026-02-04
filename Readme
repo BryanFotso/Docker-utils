@@ -1,31 +1,58 @@
 # Docker Utils
 
-Ce dépôt contient des configurations d'outils utiles que j'utilise au quotidien, mais que je lance uniquement avec Docker.
+Ce dépôt centralise des stacks Docker outillées (Traefik, PostgreSQL, pgAdmin, Portainer) avec une architecture commune:
 
-## Objectif
+- un réseau externe partagé pour faire communiquer les conteneurs entre projets
+- Traefik comme unique point d'entrée HTTP (`*.localhost`)
+- aucun port local à mémoriser (hors mode debug explicite pour PostgreSQL)
 
-L'idée est de centraliser toutes les configurations Docker de mes outils de développement et d'administration préférés, permettant de :
+## Démarrage rapide
 
-- 🚀 Déployer rapidement des outils sans installation locale
-- 🐳 Maintenir un environnement propre et isolé
-- 📦 Partager facilement des configurations fonctionnelles
-- 🔄 Répliquer l'environnement sur différentes machines
+1. Copier l'environnement :
 
-## Structure
+   ```bash
+   cp .env.example .env
+   ```
 
-Chaque dossier contient :
-- Un fichier `docker-compose.yml` pour le déploiement
-- Un `Readme.md` avec les instructions spécifiques
-- Les fichiers de configuration nécessaires
+2. Générer l'entrée de basic auth Traefik :
 
-## Utilisation
+   ```bash
+   ./scripts/gen-traefik-basicauth.sh admin
+   ```
 
-Pour chaque outil, naviguez dans le dossier correspondant et utilisez :
+   Puis remplacer `TRAEFIK_DASHBOARD_USERS` dans `.env`.
 
-```bash
-docker-compose up -d
-```
+3. Initialiser le réseau partagé :
 
-## Outils disponibles
+   ```bash
+   make init
+   ```
 
-- **Portainer** : Interface web pour la gestion des conteneurs Docker
+4. Démarrer toutes les stacks :
+
+   ```bash
+   make up-all
+   ```
+
+## URLs
+
+- Portainer: `http://portainer.localhost`
+- pgAdmin: `http://pgadmin.localhost`
+- Traefik Dashboard: `http://traefik.localhost` (protégé par basic auth)
+
+## Commandes utiles
+
+- `make up-traefik`
+- `make up-postgresql`
+- `make up-postgresql-debug` (ouvre `localhost:${POSTGRES_DEBUG_PORT}`)
+- `make up-pgadmin`
+- `make up-portainer`
+- `make down-all`
+- `make ps`
+- `make logs SERVICE=<container_name>`
+
+## Notes importantes
+
+- Le réseau partagé est externe et piloté par `SHARED_NETWORK`.
+- PostgreSQL n'est pas exposé sur l'hôte par défaut.
+- Tous les secrets/configs sont centralisés dans `.env`.

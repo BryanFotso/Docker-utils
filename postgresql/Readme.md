@@ -1,51 +1,38 @@
-## PostgreSQL avec Docker Compose
+# PostgreSQL (Docker Compose)
 
-Ce dossier permet de lancer rapidement une instance PostgreSQL prête à l'emploi via Docker Compose.
+Stack PostgreSQL connectée au réseau externe partagé `SHARED_NETWORK`.
 
-### Lancement rapide
+## Démarrage
 
-Dans ce dossier, exécutez :
-
-```bash
-docker-compose up -d
-```
-
-La base de données sera accessible sur le port `5432`.
-
-### Paramètres par défaut
-
-- **Utilisateur** : `user`
-- **Mot de passe** : `K8N$0Fsa6m$9vGyd`
-- **Base de données** : `mydb`
-
-Vous pouvez modifier ces valeurs dans le fichier `docker-compose.yml`.
-
-### Persistance des données
-
-Les données sont stockées dans un volume Docker nommé `pgdata` pour garantir la persistance même après l'arrêt du conteneur.
-
-### Connexion
-
-Pour se connecter avec un client PostgreSQL :
-
-```
-host: localhost
-port: 5432
-user: user
-password: K8N$0Fsa6m$9vGyd
-database: mydb
-```
-
-### Arrêt et suppression
-
-Pour arrêter :
+Depuis la racine du repo :
 
 ```bash
-docker-compose down
+make up-postgresql
 ```
 
-Pour supprimer les données (attention, action destructive) :
+## Exposition réseau
+
+- Par défaut, PostgreSQL est accessible uniquement depuis le réseau Docker partagé (host interne: `postgres`, port `5432`).
+- Aucun port n'est exposé sur l'hôte local.
+
+### Mode debug (optionnel)
+
+Pour exposer temporairement PostgreSQL sur l'hôte :
 
 ```bash
-docker-compose down -v
+make up-postgresql-debug
 ```
+
+Puis connexion locale sur `localhost:${POSTGRES_DEBUG_PORT}`.
+
+## Variables `.env`
+
+- `POSTGRES_IMAGE`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `POSTGRES_DEBUG_PORT`
+
+## Persistance
+
+Les données restent dans le volume Docker `pgdata`.

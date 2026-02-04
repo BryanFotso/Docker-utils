@@ -1,14 +1,25 @@
 # Docker compose to launch portainer with a web server
 services:
   portainer:
-    image: portainer/portainer-ce:latest
+    image: ${PORTAINER_IMAGE}
     container_name: portainer
     restart: unless-stopped
-    ports:
-      - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${SHARED_NETWORK}"
+      - "traefik.http.routers.portainer.rule=Host(`${PORTAINER_HOST}`)"
+      - "traefik.http.routers.portainer.entrypoints=web"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+    networks:
+      - shared
 
 volumes:
   portainer_data:
+
+networks:
+  shared:
+    external: true
+    name: ${SHARED_NETWORK}

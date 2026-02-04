@@ -1,0 +1,4 @@
+services:
+  db:
+    ports:
+      - "${POSTGRES_DEBUG_PORT}:5432"

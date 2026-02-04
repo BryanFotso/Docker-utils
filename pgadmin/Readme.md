@@ -1,36 +1,27 @@
 # pgAdmin (Docker)
 
-Ce dossier contient la configuration Docker Compose pour déployer rapidement pgAdmin, l'interface web d'administration PostgreSQL.
+pgAdmin est exposé via Traefik sur `http://pgadmin.localhost`.
 
-## Lancement rapide
+## Démarrage
 
-Dans ce dossier, exécutez :
+Depuis la racine du repo :
 
 ```bash
-docker-compose up -d
+make up-pgadmin
 ```
 
-Accédez ensuite à [http://localhost:5050](http://localhost:5050) dans votre navigateur.
+## Identifiants
 
-## Identifiants par défaut
+Les credentials sont lus depuis `.env` :
 
-- **Email** : `admin@admin.com`
-- **Mot de passe** : `admin`
-
-Vous pouvez modifier ces valeurs dans le fichier `docker-compose.yml` (variables d'environnement `PGADMIN_DEFAULT_EMAIL` et `PGADMIN_DEFAULT_PASSWORD`).
-
-## Persistance des données
-
-Les données de pgAdmin sont stockées dans un volume Docker nommé `pgadmin_data` pour garantir la persistance entre les redémarrages.
+- `PGADMIN_DEFAULT_EMAIL`
+- `PGADMIN_DEFAULT_PASSWORD`
 
 ## Réseau
 
-Un réseau Docker dédié `pgadmin-net` est créé pour faciliter la connexion à d'autres conteneurs (ex : PostgreSQL).
+- connecté au réseau externe partagé `SHARED_NETWORK`
+- accès à PostgreSQL via host `postgres` et port `5432`
 
-## Arrêt et suppression
+## Persistance
 
-Pour arrêter pgAdmin :
-
-```bash
-docker-compose down
-```
+Les données sont stockées dans le volume Docker `pgadmin_data`.
