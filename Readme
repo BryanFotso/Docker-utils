@@ -1,15 +1,31 @@
 # Docker Utils
 
-Ce dépôt contient des configurations d'outils utiles que j'utilise au quotidien, mais que je lance uniquement avec Docker.
+Ce dépôt contient des configurations d'outils utiles à lancer uniquement avec Docker, en local.
 
 ## Objectif
 
-L'idée est de centraliser toutes les configurations Docker de mes outils de développement et d'administration préférés, permettant de :
+L'idée est de centraliser les configurations Docker d'outils open source de développement et d'administration, avec une base commune :
 
-- 🚀 Déployer rapidement des outils sans installation locale
-- 🐳 Maintenir un environnement propre et isolé
-- 📦 Partager facilement des configurations fonctionnelles
-- 🔄 Répliquer l'environnement sur différentes machines
+- chaque outil reste dans son propre dossier ;
+- tous les outils rejoignent le même réseau Docker local ;
+- les ports et identifiants se configurent par variables d'environnement ;
+- les données persistantes restent dans des volumes Docker nommés.
+
+## Préparation
+
+Créez une seule fois le réseau partagé :
+
+```bash
+docker network create docker-utils
+```
+
+Copiez ensuite l'exemple de configuration dans le dossier de l'outil si vous voulez personnaliser ses valeurs :
+
+```bash
+cp postgresql/.env.example postgresql/.env
+```
+
+Important : Docker Compose lit automatiquement le fichier `.env` du dossier courant. Le fichier `.env.example` à la racine sert de vue globale, mais chaque outil a aussi son propre exemple.
 
 ## Structure
 
@@ -23,9 +39,71 @@ Chaque dossier contient :
 Pour chaque outil, naviguez dans le dossier correspondant et utilisez :
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
+
+Les ports sont exposés sur `127.0.0.1` par défaut. Les conteneurs communiquent entre eux via le réseau Docker `docker-utils`.
+
+Exemple : pgAdmin peut joindre PostgreSQL avec :
+
+```text
+host: postgres
+port: 5432
+database: mydb
+```
+
+## Utiliser PostgreSQL pour plusieurs outils
+
+La base PostgreSQL commune est `mydb`. Pour éviter les collisions, chaque outil doit utiliser son propre schéma dans cette base.
+
+Exemples :
+
+```text
+n8n      -> database: mydb, schema: n8n
+grafana  -> database: mydb, schema: grafana
+keycloak -> database: mydb, schema: keycloak
+```
+
+Quand un nouvel outil a besoin de PostgreSQL :
+
+- démarrez d'abord la stack `postgresql` ;
+- ajoutez l'outil au réseau `docker-utils` ;
+- configurez l'outil avec `host=postgres`, `port=5432`, `database=mydb` ;
+- créez un schéma dédié avec `CREATE SCHEMA IF NOT EXISTS nom_outil` ;
+- si possible, mettez cette création dans un service d'init de la stack de l'outil.
+
+La documentation détaillée et un exemple de service d'init sont dans `postgresql/Readme.md`.
+
+## Ajouter un outil
+
+Pour ajouter un nouveau dossier, gardez la même forme :
+
+```yaml
+services:
+  mon-outil:
+    image: image/open-source:tag
+    restart: unless-stopped
+    ports:
+      - "${MON_OUTIL_BIND_ADDRESS:-127.0.0.1}:${MON_OUTIL_PORT:-8080}:8080"
+    volumes:
+      - mon_outil_data:/data
+    networks:
+      - tools
+
+volumes:
+  mon_outil_data:
+
+networks:
+  tools:
+    external: true
+    name: ${DOCKER_UTILS_NETWORK:-docker-utils}
+```
+
+Évitez `container_name` sauf besoin précis : Docker Compose gère déjà les noms et cela permet de dupliquer ou renommer une stack plus facilement.
 
 ## Outils disponibles
 
 - **Portainer** : Interface web pour la gestion des conteneurs Docker
+- **PostgreSQL** : Base de données relationnelle
+- **pgAdmin** : Interface web d'administration PostgreSQL
+- **n8n** : Automatisation de workflows self-hostée

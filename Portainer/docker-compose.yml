@@ -1,14 +1,19 @@
-# Docker compose to launch portainer with a web server
 services:
   portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
+    image: portainer/portainer-ce:lts
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "${PORTAINER_BIND_ADDRESS:-127.0.0.1}:${PORTAINER_PORT:-9000}:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
+    networks:
+      - tools
 
 volumes:
   portainer_data:
+
+networks:
+  tools:
+    external: true
+    name: ${DOCKER_UTILS_NETWORK:-docker-utils}

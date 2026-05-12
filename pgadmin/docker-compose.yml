@@ -1,22 +1,21 @@
-version: '3.8'
 services:
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@admin.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-change-me}
     ports:
-      - "5050:80"
+      - "${PGADMIN_BIND_ADDRESS:-127.0.0.1}:${PGADMIN_PORT:-5050}:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
-      - pgadmin-net
+      - tools
 
 volumes:
   pgadmin_data:
 
 networks:
-  pgadmin-net:
-    driver: bridge
+  tools:
+    external: true
+    name: ${DOCKER_UTILS_NETWORK:-docker-utils}
