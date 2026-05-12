@@ -107,3 +107,4 @@ networks:
 - **PostgreSQL** : Base de données relationnelle
 - **pgAdmin** : Interface web d'administration PostgreSQL
 - **n8n** : Automatisation de workflows self-hostée
+- **Ollama** : Exécution locale de modèles de langage

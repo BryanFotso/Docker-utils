@@ -28,7 +28,7 @@ services:
       n8n-init-db:
         condition: service_completed_successfully
     ports:
-      - "${N8N_BIND_ADDRESS:-127.0.0.1}:${N8N_HOST_PORT:-5678}:5678"
+      - "${N8N_HOST_PORT:-5678}:5678"
     environment:
       N8N_HOST: ${N8N_HOST:-localhost}
       N8N_PORT: 5678
