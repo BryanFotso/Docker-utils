@@ -1,0 +1,59 @@
+services:
+  n8n-init-db:
+    image: postgres:16-alpine
+    restart: "no"
+    environment:
+      PGPASSWORD: ${DB_POSTGRESDB_PASSWORD:-change-me}
+    command:
+      - sh
+      - -c
+      - |
+        until pg_isready -h "${DB_POSTGRESDB_HOST:-postgres}" -p "${DB_POSTGRESDB_PORT:-5432}" -U "${DB_POSTGRESDB_USER:-user}" -d "${DB_POSTGRESDB_DATABASE:-mydb}"; do
+          sleep 2
+        done
+        psql -v ON_ERROR_STOP=1 \
+          -h "${DB_POSTGRESDB_HOST:-postgres}" \
+          -p "${DB_POSTGRESDB_PORT:-5432}" \
+          -U "${DB_POSTGRESDB_USER:-user}" \
+          -d "${DB_POSTGRESDB_DATABASE:-mydb}" \
+          -c 'CREATE SCHEMA IF NOT EXISTS "${DB_POSTGRESDB_SCHEMA:-n8n}";' \
+          -c 'GRANT USAGE, CREATE ON SCHEMA "${DB_POSTGRESDB_SCHEMA:-n8n}" TO "${DB_POSTGRESDB_USER:-user}";'
+    networks:
+      - tools
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    depends_on:
+      n8n-init-db:
+        condition: service_completed_successfully
+    ports:
+      - "${N8N_BIND_ADDRESS:-127.0.0.1}:${N8N_HOST_PORT:-5678}:5678"
+    environment:
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      WEBHOOK_URL: ${WEBHOOK_URL:-http://localhost:5678/}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-Europe/Paris}
+      TZ: ${GENERIC_TIMEZONE:-Europe/Paris}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: ${DB_POSTGRESDB_HOST:-postgres}
+      DB_POSTGRESDB_PORT: ${DB_POSTGRESDB_PORT:-5432}
+      DB_POSTGRESDB_DATABASE: ${DB_POSTGRESDB_DATABASE:-mydb}
+      DB_POSTGRESDB_USER: ${DB_POSTGRESDB_USER:-user}
+      DB_POSTGRESDB_PASSWORD: ${DB_POSTGRESDB_PASSWORD:-change-me}
+      DB_POSTGRESDB_SCHEMA: ${DB_POSTGRESDB_SCHEMA:-n8n}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+    networks:
+      - tools
+
+volumes:
+  n8n_data:
+
+networks:
+  tools:
+    external: true
+    name: ${DOCKER_UTILS_NETWORK:-docker-utils}
