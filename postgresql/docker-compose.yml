@@ -1,17 +1,22 @@
-version: '3.8'
 services:
-  db:
-    image: postgres:16
-    container_name: postgres_db
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: K8N\$0Fsa6m\$9vGyd
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - tools
 
 volumes:
   pgdata:
+
+networks:
+  tools:
+    external: true
+    name: ${DOCKER_UTILS_NETWORK:-docker-utils}
