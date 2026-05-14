@@ -44,6 +44,7 @@ services:
       DB_POSTGRESDB_USER: ${DB_POSTGRESDB_USER:-user}
       DB_POSTGRESDB_PASSWORD: ${DB_POSTGRESDB_PASSWORD:-change-me}
       DB_POSTGRESDB_SCHEMA: ${DB_POSTGRESDB_SCHEMA:-n8n}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
     volumes:
       - n8n_data:/home/node/.n8n
       - ./local-files:/files
